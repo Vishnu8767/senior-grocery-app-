@@ -1,0 +1,16 @@
+/* Base settings for high accessibility */
+html {
+    /* Increase base font size to make 1rem larger overall */
+    font-size: 18px; 
+}
+
+/* Ensure focus states are extremely visible for seniors using keyboard navigation */
+*:focus {
+    outline: 4px solid #FBBF24 !important; /* Yellow-400 */
+    outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
