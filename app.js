@@ -1,160 +1,129 @@
-// Catalog of 30+ items
+// --- Navigation Logic ---
+function showScreen(screenId) {
+    ['loginScreen', 'otpScreen', 'profileScreen', 'mainScreen'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+    });
+    document.getElementById(screenId).classList.remove('hidden');
+}
+
+// --- Login & OTP Logic ---
+const mobileInput = document.getElementById('mobileInput');
+const loginBtn = document.getElementById('loginBtn');
+
+mobileInput.addEventListener('input', (e) => {
+    if (e.target.value.length === 10) {
+        loginBtn.disabled = false;
+        loginBtn.classList.replace('bg-gray-300', 'bg-black');
+        loginBtn.classList.replace('text-gray-500', 'text-white');
+    } else {
+        loginBtn.disabled = true;
+        loginBtn.classList.replace('bg-black', 'bg-gray-300');
+        loginBtn.classList.replace('text-white', 'text-gray-500');
+    }
+});
+
+function sendOTP() {
+    document.getElementById('displayMobile').innerText = "+91 " + mobileInput.value;
+    showScreen('otpScreen');
+}
+
+function verifyOTP() {
+    const otp = document.getElementById('otpInput').value;
+    if (otp === '1234') { // Mock verification
+        showScreen('profileScreen');
+    } else {
+        alert("Invalid OTP. Try 1234.");
+    }
+}
+
+function completeProfile() {
+    const name = document.getElementById('nameInput').value;
+    if (name.trim() === "") return alert("Please enter your name");
+    
+    document.getElementById('greetName').innerText = name.split(' ')[0];
+    showScreen('mainScreen');
+    
+    // Fetch mock location
+    setTimeout(() => {
+        document.getElementById('userLocation').innerText = "Koramangala, Bengaluru";
+    }, 1500);
+}
+
+// --- E-Commerce Logic ---
 const products = [
-    { name: "Fresh Bananas", price: 1.20, icon: "🍌" },
-    { name: "Whole Wheat Bread", price: 3.50, icon: "🍞" },
-    { name: "Red Apples", price: 2.50, icon: "🍎" },
-    { name: "Milk (1 Gallon)", price: 4.00, icon: "🥛" },
-    { name: "Eggs (Dozen)", price: 3.00, icon: "🥚" },
-    { name: "Carrots", price: 1.50, icon: "🥕" },
-    { name: "Potatoes", price: 4.50, icon: "🥔" },
-    { name: "Tomatoes", price: 2.00, icon: "🍅" },
-    { name: "Onions", price: 1.80, icon: "🧅" },
-    { name: "Broccoli", price: 2.20, icon: "🥦" },
-    { name: "Cheese Slices", price: 3.50, icon: "🧀" },
-    { name: "Butter", price: 4.20, icon: "🧈" },
-    { name: "Yogurt", price: 1.00, icon: "🥣" },
-    { name: "Oranges", price: 3.00, icon: "🍊" },
-    { name: "Grapes", price: 4.00, icon: "🍇" },
-    { name: "Strawberries", price: 3.80, icon: "🍓" },
-    { name: "Watermelon", price: 5.00, icon: "🍉" },
-    { name: "Chicken Breast", price: 8.00, icon: "🍗" },
-    { name: "Rice (1 lb)", price: 2.00, icon: "🍚" },
-    { name: "Pasta", price: 1.50, icon: "🍝" },
-    { name: "Cereal", price: 4.00, icon: "🥣" },
-    { name: "Oatmeal", price: 3.50, icon: "🥣" },
-    { name: "Coffee", price: 7.00, icon: "☕" },
-    { name: "Tea Bags", price: 4.00, icon: "🍵" },
-    { name: "Sugar", price: 2.50, icon: "🧂" },
-    { name: "Salt", price: 1.00, icon: "🧂" },
-    { name: "Pain Reliever (Tylenol)", price: 6.00, icon: "💊" },
-    { name: "Band-Aids", price: 3.50, icon: "🩹" },
-    { name: "Cough Syrup", price: 7.50, icon: "🥄" },
-    { name: "Hand Sanitizer", price: 3.00, icon: "🧴" },
-    { name: "Toilet Paper", price: 8.00, icon: "🧻" },
-    { name: "Paper Towels", price: 6.00, icon: "🧻" }
+    { id: 1, name: "Amul Taaza Milk", qty: "500 ml", price: 27, image: "🥛" },
+    { id: 2, name: "Harvest Gold Bread", qty: "400 g", price: 40, image: "🍞" },
+    { id: 3, name: "Farm Fresh Eggs", qty: "6 pieces", price: 50, image: "🥚" },
+    { id: 4, name: "Onion (Pyaz)", qty: "1 kg", price: 35, image: "🧅" }
 ];
 
-let cartCount = 0;
-let cartTotal = 0.00;
+let cart = {};
 
-// Render products to the screen
-function renderProducts(items) {
-    const list = document.getElementById("product-list");
-    list.innerHTML = ""; // Clear current list
-
-    items.forEach(item => {
-        list.innerHTML += `
-            <div class="bg-white p-4 rounded-xl shadow-md flex items-center justify-between border-2 border-gray-200">
-                <div class="flex items-center gap-4">
-                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center text-5xl">${item.icon}</div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-900">${item.name}</h3>
-                        <p class="text-xl text-green-700 font-bold mt-1">$${item.price.toFixed(2)}</p>
-                    </div>
+function renderProducts() {
+    const list = document.getElementById('productList');
+    list.innerHTML = products.map(p => `
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+            <div class="text-6xl text-center mb-2 bg-gray-50 rounded-lg py-4">${p.image}</div>
+            <h4 class="font-bold text-sm text-gray-800 line-clamp-2">${p.name}</h4>
+            <p class="text-xs text-gray-500 mb-2">${p.qty}</p>
+            <div class="flex justify-between items-center mt-auto">
+                <p class="font-extrabold text-sm">₹${p.price}</p>
+                <div id="btn-container-${p.id}">
+                    <button onclick="updateCart(${p.id}, 1)" class="text-green-600 font-bold border border-green-600 rounded-lg px-4 py-1 text-sm bg-green-50 shadow-sm">ADD</button>
                 </div>
-                <button onclick="addToCart(${item.price})" class="bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transition">
-                    + Add
-                </button>
             </div>
-        `;
-    });
+        </div>
+    `).join('');
 }
 
-// Initial render
-renderProducts(products);
-
-// Search functionality
-function searchProducts() {
-    const query = document.getElementById("searchInput").value.toLowerCase();
-    const filtered = products.filter(item => item.name.toLowerCase().includes(query));
+function updateCart(id, change) {
+    if (!cart[id]) cart[id] = 0;
+    cart[id] += change;
     
-    const noResultsDiv = document.getElementById("no-results");
-    
-    if (filtered.length === 0) {
-        document.getElementById("product-list").innerHTML = "";
-        noResultsDiv.classList.remove("hidden");
+    if (cart[id] <= 0) {
+        delete cart[id];
+        renderAddButton(id);
     } else {
-        noResultsDiv.classList.add("hidden");
-        renderProducts(filtered);
+        renderCounterButton(id);
     }
+    updateCartUI();
 }
 
-// Cart logic
-function addToCart(price) {
-    cartCount++;
-    cartTotal += price;
-    document.getElementById("item-count").innerText = `${cartCount} items`;
-    document.getElementById("cart-total").innerText = `$${cartTotal.toFixed(2)}`;
+function renderAddButton(id) {
+    document.getElementById(`btn-container-${id}`).innerHTML = `
+        <button onclick="updateCart(${id}, 1)" class="text-green-600 font-bold border border-green-600 rounded-lg px-4 py-1 text-sm bg-green-50 shadow-sm">ADD</button>
+    `;
+}
+
+function renderCounterButton(id) {
+    document.getElementById(`btn-container-${id}`).innerHTML = `
+        <div class="flex items-center bg-green-600 text-white rounded-lg px-2 py-1 text-sm font-bold shadow-sm">
+            <button onclick="updateCart(${id}, -1)" class="px-2">-</button>
+            <span class="px-2">${cart[id]}</span>
+            <button onclick="updateCart(${id}, 1)" class="px-2">+</button>
+        </div>
+    `;
+}
+
+function updateCartUI() {
+    let totalItems = 0;
+    let totalPrice = 0;
     
-    // Provide a gentle alert for older users so they know it worked
-    alert("Item added to cart!");
-}
-
-// Checkout Modal Logic
-function openCheckout() {
-    if (cartCount === 0) {
-        alert("Your cart is empty. Please add items first.");
-        return;
+    for (let id in cart) {
+        let product = products.find(p => p.id == id);
+        totalItems += cart[id];
+        totalPrice += cart[id] * product.price;
     }
-    document.getElementById("checkoutModal").classList.remove("hidden");
-}
-
-function closeCheckout() {
-    document.getElementById("checkoutModal").classList.add("hidden");
-}
-
-// Get Live Location
-function getLocation() {
-    const addressInput = document.getElementById("addressInput");
-    addressInput.value = "Finding location...";
     
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                // In a real app, you'd use a Geocoding API to convert coordinates to an address
-                addressInput.value = `Location found! (Lat: ${position.coords.latitude.toFixed(2)}, Lng: ${position.coords.longitude.toFixed(2)})`;
-            },
-            () => {
-                addressInput.value = "";
-                alert("Could not find your location. Please type your address.");
-            }
-        );
+    const cartBar = document.getElementById('cartBar');
+    if (totalItems > 0) {
+        cartBar.classList.remove('hidden');
+        document.getElementById('cartItemsText').innerText = `${totalItems} items`;
+        document.getElementById('cartTotalText').innerText = `₹${totalPrice}`;
     } else {
-        alert("Location services are not supported by this browser.");
+        cartBar.classList.add('hidden');
     }
 }
 
-// Submit Order Logic
-function submitOrder() {
-    const address = document.getElementById("addressInput").value;
-    if (address.trim() === "") {
-        alert("Please enter your address so we know where to deliver.");
-        return;
-    }
-    
-    closeCheckout();
-    
-    // Reset Cart
-    cartCount = 0;
-    cartTotal = 0;
-    document.getElementById("item-count").innerText = `0 items`;
-    document.getElementById("cart-total").innerText = `$0.00`;
-    document.getElementById("addressInput").value = "";
-    
-    // Show Success Modal
-    document.getElementById("successModal").classList.remove("hidden");
-}
-
-function closeSuccess() {
-    document.getElementById("successModal").classList.add("hidden");
-}
-
-// AI Assistant Logic
-function toggleAssistant() {
-    const modal = document.getElementById("aiModal");
-    if (modal.classList.contains("hidden")) {
-        modal.classList.remove("hidden");
-    } else {
-        modal.classList.add("hidden");
-    }
-}
+// Initialize App
+renderProducts();
